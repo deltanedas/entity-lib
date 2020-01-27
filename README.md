@@ -6,22 +6,27 @@ You can extend classes `entityLib.Mech` or `entityLib.Unit`.
 
 By default, it functions like a vanilla one.
 
-Set `features` to a map of features and values.
-
-Current features:
-```
-"weapons": Array of Weapon
-"limit-rotation": Limit rotation to a certain angle every tick.
-
 # How to use
 
 Add `entity-lib` to your `depedencies: []` in **mod.hjson**.
 
-You may extend drawWeapon(int number, Player player) to draw weapons how you want.
+You may extend: (where Entity is Player or Unit)
+
+* drawWeapon(int number, Entity entity): draw weapons how you want.
+* drawUnder(Entity entity): draw sprites underneath the weapons. Optional.
+* drawOver(Entity entity): draw sprites above the weapons. Optional.
+
+RO:	`trueRotation` is player/unit rotation after it is limited.
+RW: `rotationLimit` is maximum rotation per tick.
+RW:	`weapons` are an array of `Weapon`s to be fired.
 
 See example code below:
 ```js
-const myMech = extendContent(entityLib.Mech, "my-mech", {});
+const myMech = extendContent(entityLib.Mech, "my-mech", {
+	drawUnder: function(player){
+		Draw.rect(Core.atlas.find("error"), player.x, player.y, this.trueRotation);
+	}
+});
 myMech.rotationLimit = 1; // 60' per second usually
 myMech.weapons = [
 	Mechs.omega.weapon,

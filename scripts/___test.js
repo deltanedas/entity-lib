@@ -1,119 +1,91 @@
-entityLib = {
-	version: CurrentMod
-};
+print("DEBUG - loaded first one");
+entityLib = {};
 
-/* Config */
-const rotateSpeed = 1.45; // Max degrees the mech can rotate every shot attempt
-const fireRate = 600; // RPM of each gun
-
-/* Bullet */
-const miniVbuck = extend(BasicBulletType, {});
-miniVbuck.speed = 10;
-miniVbuck.damage = 16;
-miniVbuck.bulletWidth = 2;
-miniVbuck.bulletHeight = 3;
-miniVbuck.shootEffect = Fx.shootSmall;
-miniVbuck.smokeEffect = Fx.coreLand;
-miniVbuck.homingPower = 3;
-miniVbuck.homingRange = 5;
-miniVbuck.knockback = 0;
-miniVbuck.hitShake = 0;
-miniVbuck.bulletSprite = "vbucks-vbuck-bullet";
-miniVbuck.frontColor = Color.valueOf("#ffdddd");
-miniVbuck.lightining = 3;
-miniVbuck.lightningLength = 1;
-
-const gun = extendContent(Weapon, "hurricane-gun", {});
-gun.ejectEffect = Fx.blastsmoke;
-gun.length = 3;
-gun.width = 0;
-gun.bullet = miniVbuck;
-gun.alternate = true;
-
-const multiWeapon = extendContent(Weapon, "hurricane-multi", {
-	// Don't ask
-	// @Override
-	load: function(){
-		print("No!!!!!!");
-	},
-	loadProperly: function(mech){
-		this.region = Core.atlas.find("clear");
-		if(mech != null){
-			this.parent = mech;
-		}
-	},
-
-	// Do turning slowly like a tank
-	// @Override
-	update: function(shooter, pX, pY){
-		var left = false;
-		do{
-			var pos = Vec2(pX, pY);
-			pos.sub(shooter.getX(), shooter.getY());
-			if(pos.len() < this.minPlayerDist){
-				pos.setLength(this.minPlayerDist);
+function createMultiWeapon(entity){
+	entity.weapon = new JavaAdapter(Weapon, {
+		// Don't ask
+		// @Override
+		constructor: function(name, parent){
+			this.parent = parent;
+			this.name = name;
+		},
+		load: function(){
+			print("No!!!!!!");
+		},
+		loadProperly: function(parent){
+			this.region = Core.atlas.find("clear");
+			if(mech != null){
+				this.parent = parent;
 			}
-			var cx = pos.x + shooter.getX(), cy = pos.y + shooter.getY();
+		},
 
-			var ang = pos.angle();
-			pos.setAngle(ang);
-			pos.trns(ang - 90, this.width * Mathf.sign(left), this.length + Mathf.range(this.lengthRand));
-
-			// "realUpdate" to avoid bs infinite recursion
-			this.realUpdate(shooter, pos.x, pos.y, Angles.angle(shooter.getX() + pos.x, shooter.getY() + pos.y, cx, cy), left);
-			left = !left;
-		}while(left);
-	},
-
-	realUpdate: function(shooter, x, y, angle, left){
-		if(shooter.getTimer().get(shooter.getShootTimer(left), this.reload)){
-			if(this.alternate){
-				shooter.getTimer().reset(shooter.getShootTimer(!left), this.reload / 2);
-			}
-
-			this.shoot(shooter, x, y, angle, left);
-		}
-	},
-
-	// @Override
-	shoot: function(shooter, x, y, angle, left){
-		if(this.parent != null){
-			const lastRotation = this.parent.getRotation();
-
-			// Prevent wrapping around at +X
-			if(Math.abs(angle - lastRotation) > 180){
-				angle += 360;
-			}
-			// Limit rotation speed
-			if(Math.abs(angle - lastRotation) > rotateSpeed){
-				// Decide which direction to turn
-				if((angle - lastRotation) > lastRotation){
-					angle = rotateSpeed;
-				}else{
-					angle = -rotateSpeed;
+		// Do turning slowly like a tank
+		// @Override
+		update: function(shooter, pX, pY){
+			var left = false;
+			do{
+				var pos = Vec2(pX, pY);
+				pos.sub(shooter.getX(), shooter.getY());
+				if(pos.len() < this.minPlayerDist){
+					pos.setLength(this.minPlayerDist);
 				}
-				angle += lastRotation;
-			}
-			this.parent.setRotation(angle);
+				var cx = pos.x + shooter.getX(), cy = pos.y + shooter.getY();
 
-			if(Vars.net.client()){
-				this.shootDirect(shooter, x, y, angle, left);
-			}else{
-				// WILL NOT WORK FOR GENERIC STUFF!!!!
-				// I'm hoping nobody will set a units weapon to this...
-				Call.onPlayerShootWeapon(shooter, x, y, angle, left);
-			}
+				var ang = pos.angle();
+				pos.setAngle(ang);
+				pos.trns(ang - 90, this.width * Mathf.sign(left), this.length + Mathf.range(this.lengthRand));
 
-			this.parent.rotateBarrel();
+				// "realUpdate" to avoid bs infinite recursion
+				this.realUpdate(shooter, pos.x, pos.y, Angles.angle(shooter.getX() + pos.x, shooter.getY() + pos.y, cx, cy), left);
+				left = !left;
+			}while(left);
+		},
+
+		realUpdate: function(shooter, x, y, angle, left){
+			if(shooter.getTimer().get(shooter.getShootTimer(left), this.reload)){
+				if(this.alternate){
+					shooter.getTimer().reset(shooter.getShootTimer(!left), this.reload / 2);
+				}
+
+				this.shoot(shooter, x, y, angle, left);
+			}
+		},
+
+		// @Override
+		shoot: function(shooter, x, y, angle, left){
+			if(this.parent != null){
+				const lastRotation = this.parent.getRotation();
+
+				// Prevent wrapping around at +X
+				if(Math.abs(angle - lastRotation) > 180){
+					angle += 360;
+				}
+				// Limit rotation speed
+				if(Math.abs(angle - lastRotation) > rotateSpeed){
+					// Decide which direction to turn
+					if((angle - lastRotation) > lastRotation){
+						angle = rotateSpeed;
+					}else{
+						angle = -rotateSpeed;
+					}
+					angle += lastRotation;
+				}
+				this.parent.setRotation(angle);
+
+				if(Vars.net.client()){
+					this.shootDirect(shooter, x, y, angle, left);
+				}else{
+					// TODO: fix
+					// WILL NOT WORK FOR GENERIC STUFF!!!!
+					// I'm hoping nobody will set a units weapon to this...
+					Call.onPlayerShootWeapon(shooter, x, y, angle, left);
+				}
+
+				this.parent.rotateBarrel();
+			}
 		}
-	}
-});
-multiWeapon.reload = 60 / (fireRate / 60);
-multiWeapon.length = 4;
-multiWeapon.alternate = true;
-multiWeapon.bullet = miniVbuck;
-multiWeapon.width = 6.5;
-multiWeapon.shots = Math.round(fireRate / 360); // Compensate for >1 tick fire delay
+	}, entity.name + "-multi-weapon");
+}
 
 /* Complete rewrite of mech */
 const hurricane = extendContent(Mech, "hurricane", {
