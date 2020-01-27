@@ -75,12 +75,15 @@ function createMultiWeapon(parent){
 	}, parent.name + "-multi-weapon");
 }
 
-/* Mech and units pull from this code */
-const common = {
+/*
+Mech and units pull from this code
+Do not extend in your mods.
+*/
+const Common = {
 	// @Override
 	constructor: function(name){
 		this.name = name;
-		this.weapon = createMultiWeapon(this);
+		this.entities = [];
 	},
 
 	// @Override
@@ -90,30 +93,7 @@ const common = {
 		this.loadAfter();
 	},
 
-	// @Override
-	updateAlt: function(player){
-		// Rotation stuff
-		const rot = this.trueRotation(player);
-		if(rot === null){
-			rot = player.rotation;
-		}
-		this.trueRotation(player, Mathf.lerp(rot, player.rotation, this.rotationLerp);
-		this.update(player);
-	},
-
-	// @Override
-	draw: function(player){
-		const rotation = this.trueRotation(player) - 90;
-		this.drawGuns(player);
-		Draw.rect(this.bodyRegion, player.x, player.y, rotation);
-
-		const tmp = player.rotation;
-		player.rotation = rotation + 90;
-		player.drawLight();
-		player.drawBackItems();
-		player.rotation = tmp;
-		this.drawOver(player);
-	},
+	loadAfter: function(){},
 
 	drawWeapons: function(player, rot){
 		const lim = Mathf.floor(this.weapons.length / 2);
@@ -125,25 +105,41 @@ const common = {
 	},
 
 	drawWeapon: function(player, rot, num){
-		
-	}
 
-	// @Override
-	drawStats: function(player){
-		const health = player.healthf();
-		Draw.color(Color.black, player.getTeam().color, health + Mathf.absin(Time.time(), health * 5, 1 - health));
-		Draw.rect(player.getPowerCellRegion(),
-			player.x + Angles.trnsx(this.targetRotation, this.cellTrnsY, 0),
-			player.y + Angles.trnsy(this.targetRotation, this.cellTrnsY, 0),
-			this.trueRotation(player - 90);
-		Draw.reset();
 	},
+
+	drawAbove: function(player, rotation){},
+	drawUnder: function(player, rotation){},
 
 	trueRotation: function(player, rotation){
-		this.entities[player].trueRotation = rotation;
+		var ent = this.entity(player);
+		ent.trueRotation = rotation;
+		this.entity(player, ent);
+		return rotation;
+	},
+	trueRotation: function(player){
+		return this.entity(player).trueRotation;
 	},
 
-	trueRotation: function(player){
-		this.entities[player].trueRotation;
+	entity: function(player, ent) {
+		print("Set ent " + player + " to " + ent);
+		return this.entities[player] = ent;
+	},
+	entity: function(player) {
+		print("Get ent " + player);
+		var ent = this.entities[player];
+		if(ent === undefined){
+			ent = this.entity(player, {
+				trueRotation: null
+			});
+		}
+		return ent;
 	}
-});
+};
+Common.entities = {};
+Common.rotationLimit = 0;
+Common.rotationLerp = 0.01;
+Common.weapons = [];
+createMultiWeapon(Common);
+
+entityLib.Common = Common;
