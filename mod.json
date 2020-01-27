@@ -1,0 +1,8 @@
+{
+	"name": "entity-lib",
+	"displayName": "[sky]Entity Lib[]",
+	"author": "DeltaNedas",
+	"description": "Library for other mods, adds nothing on its own.",
+	"version": "1.0.0",
+	"minGameVersion": "103"
+}
