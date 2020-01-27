@@ -147,68 +147,15 @@ const hurricane = extendContent(Mech, "hurricane", {
 		Draw.rect(player.getPowerCellRegion(),
 			player.x + Angles.trnsx(this.targetRotation, this.cellTrnsY, 0),
 			player.y + Angles.trnsy(this.targetRotation, this.cellTrnsY, 0),
-			this.targetRotation - 90);
+			this.trueRotation(player - 90);
 		Draw.reset();
 	},
 
-	rotateBarrel: function(){
-		this._barrelRotation = this._barrelRotation + 0.1;
+	trueRotation: function(player, rotation){
+		this.entities[player].trueRotation = rotation;
 	},
 
-	setRotation: function(rotation){
-		this.targetRotation = rotation;
-	},
-
-	getRotation: function(){
-		return this.targetRotation;
+	trueRotation: function(player){
+		this.entities[player].trueRotation;
 	}
 });
-hurricane.rotorRegion = null;
-hurricane.gunBarrelRegion = null;
-hurricane.bodyRegion = null;
-hurricane.speed = 0.6;
-hurricane.buildPower = 0.1;
-hurricane.mass = 10;
-hurricane.engineColor = Color.valueOf("#7fd5fe");
-hurricane.flying = true;
-hurricane.health = 500;
-hurricane.weapon = multiWeapon;
-hurricane.cellTrnsY = -5;
-hurricane.engineOffset = 6;
-
-hurricane.gun = gun;
-hurricane._barrelRotation = 0;
-hurricane.rotorSpeed = 0;
-hurricane.targetRotation = null;
-hurricane.gunOffsetX = 6.5;
-hurricane.gunOffsetY = 4;
-
-/* Custom mech spawn animation + name change */
-const pad = extendContent(MechPad, "helipad", {/*
-Doesn't work because entity.player is ALWAYS null.
-Probably because tile.ent() wont cast to mechpad tileentity?
-	// @Override
-	drawLayer: function(tile){
-		const entity = tile.ent();
-		if(entity.player != null){
-			print("Player isnt null");
-			if(!entity.sameMech || entity.player.mech != this.mech){
-				print("eeeeeee")
-				Draw.rect(Core.atlas.find("vbucks-hurricane"), tile.drawx(), tile.drawy());
-				// Cover mech with a shadow as if it were slowly emerging from the silo.
-				Draw.color(black, 1 - entity.progress);
-				Draw.rect(Core.atlas.find("vbucks-hurricane-shadow"), tile.drawx(), tile.drawy());
-				Draw.color();
-			}else{
-				// Draw normally as the player is not constructing a mother hurricane
-				RespawnBlock.drawRespawn(tile, entity.heat, entity.progress, entity.time, entity.player, Mechs.starterMech);
-			}
-		}
-	}*/
-});
-pad.mech = hurricane;
-pad.update = true;
-
-// If any errors occur in mother hurricane, these will not be set.
-pad.localizedName = Core.bundle.get("block.vbucks-helipad.real-name");
-pad.description = Core.bundle.get("block.vbucks-helipad.real-description");
