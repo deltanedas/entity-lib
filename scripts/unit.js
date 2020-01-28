@@ -1,8 +1,8 @@
-const UnitType = extend(entityLib.Common, {
+const UnitTypeDef = extend(this.global.entityLib.Common, {
 	// @Override
 	loadAfter: function(){
 		print("Hello client!");
 	}
 });
 
-entityLib.UnitType = UnitType;
+this.global.entityLib.UnitType = extend(UnitType, UnitTypeDef);

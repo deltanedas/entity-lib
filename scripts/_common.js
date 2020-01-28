@@ -1,11 +1,13 @@
 // TODO: custom weapon alternation code
+const entityLib = this.global.entityLib;
 
 function createMultiWeapon(parent){
 	parent.weapon = new JavaAdapter(Weapon, {
-		constructor: function(name, parent, isMech){
+		constructor: function(name, parent){
 			this.parent = parent;
 			this.name = name;
 			this.isMech = parent.turnCursor !== undefined; // Will not work if UnitType gains a turnCursor field
+			this.weapon = 0;
 		},
 
 		// @Override
@@ -61,6 +63,7 @@ function createMultiWeapon(parent){
 				}
 				this.parent.trueRotation(shooter, angle);
 
+				// Cycle through weapons
 				if(Vars.net.client()){
 					this.shootDirect(shooter, x, y, angle, false);
 				}else if(this.isMech){
@@ -70,7 +73,54 @@ function createMultiWeapon(parent){
 				}
 
 				this.parent.onShoot(this);
+				this.cycleWeapons();
 			}
+		},
+
+		cycleWeapons: function(){
+			this.weapon = (this.weapon++) % this.weapons.length;
+		},
+
+		// @Override
+		shootDirect: function(shooter, offsetX, offsetY, rotation, ign){
+			this.realShootDirect(shooter, offsetX, offsety, rotation, this.weapon);
+		},
+
+		// Basically copy pasted vanilla code but made it use current weapon
+		realShootDirect: function(shooter, offsetX, offsety, rotation, num){
+			const weapon = this.weapons[num];
+
+			const x = shooter.getX() + offsetX;
+			const y = shooter.getY() + offsetY;
+			const baseX = shooter.getX(), baseY = shooter.getY();
+
+			weapon.shootSound.at(x, y, Mathf.random(0.8, 1.0));
+
+			this.sequenceNum = 0;
+			if(weapon.shotDelay > 0.01){
+				Angles.shotgun(weapon.shots, weapon.spacing, rotation, f => {
+					Time.run(this.sequenceNum * weapon.shotDelay, () => weapon.bullet(shooter, x + shooter.getX() - baseX, y + shooter.getY() - baseY, f + Mathf.range(weapon.inaccuracy)));
+					this.sequenceNum++;
+				});
+			}else{
+				Angles.shotgun(weapon.shots, weapon.spacing, rotation, f => weapon.bullet(shooter, x, y, f + Mathf.range(weapon.inaccuracy)));
+			}
+
+			const ammo = weapon.bullet;
+
+			Tmp.v1.trns(rotation + 180, ammo.recoil);
+
+			shooter.velocity().add(Tmp.v1);
+
+			Tmp.v1.trns(rotation, 3);
+
+			Effects.shake(weapon.shake, weapon.shake, x, y);
+			Effects.effect(weapon.ejectEffect, x, y, rotation * Mathf.clamp(num, -1, 1));
+			Effects.effect(ammo.shootEffect, x + Tmp.v1.x, y + Tmp.v1.y, rotation, shooter);
+			Effects.effect(ammo.smokeEffect, x + Tmp.v1.x, y + Tmp.v1.y, rotation, shooter);
+
+			//reset timer for remote players
+			shooter.getTimer().get(shooter.getShootTimer(false), weapon.reload);
 		}
 	}, parent.name + "-multi-weapon");
 }
@@ -114,6 +164,8 @@ const Common = {
 	drawAbove: function(parent, rotation){},
 	drawUnder: function(player, rotation){},
 
+	onShoot: function(weapon){},
+
 	trueRotation: function(parent, rotation){
 		var ent = this.entity(parent);
 		ent.trueRotation = rotation;
@@ -145,4 +197,4 @@ Common.rotationLerp = 0.01;
 Common.weapons = [];
 createMultiWeapon(Common);
 
-entityLib.Common = Common;
+this.global.entityLib.Common = Common;

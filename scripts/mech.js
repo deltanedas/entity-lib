@@ -1,4 +1,5 @@
-const Mech = extend(entityLib.Common, {
+const MechDef = Object.create(this.global.entityLib.Common);
+Object.assign(MechDef, {
 	// @Override
 	updateAlt: function(player){
 		// Rotation stuff
@@ -9,9 +10,6 @@ const Mech = extend(entityLib.Common, {
 		this.trueRotation(player, Mathf.lerp(rot, player.rotation, this.rotationLerp);
 		this.update(player);
 	},
-	update: function(player){},
-
-	// @Override
 	draw: function(player){
 		const rot = this.trueRotation(player) - 90;
 		this.drawUnder(player, rot);
@@ -45,4 +43,4 @@ const Mech = extend(entityLib.Common, {
 	}
 });
 
-entityLib.Mech = Mech;
+this.global.entityLib.Mech = extend(Mech, MechDef);
