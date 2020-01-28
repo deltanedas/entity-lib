@@ -95,41 +95,44 @@ const Common = {
 
 	loadAfter: function(){},
 
-	drawWeapons: function(player, rot){
+	drawWeapons: function(parent, rot){
 		const lim = Mathf.floor(this.weapons.length / 2);
-		for(var i = -lim; i < lim; i++){
-			if(i != 0 || this.weapons.length % 2 == 1){
-				this.drawWeapon(player, rot, i);
+		var index = 0;
+		for(var num = -lim; num < lim; num++){
+			if(num != 0 || this.weapons.length % 2 == 1){
+				this.drawWeapon(player, rot, num, index++);
 			}
 		}
 	},
 
-	drawWeapon: function(player, rot, num){
-
+	drawWeapon: function(parent, rot, num, index){
+		const weapon = this.weapons[index];
+		// TODO: Use same maths from mother hen to actually move it properly instead of this joke
+		Draw.rect(weapon.region, parent.x + weapon.width * num, parent.y + weapon.length, rot); // Evenly space out each weapon by default
 	},
 
-	drawAbove: function(player, rotation){},
+	drawAbove: function(parent, rotation){},
 	drawUnder: function(player, rotation){},
 
-	trueRotation: function(player, rotation){
-		var ent = this.entity(player);
+	trueRotation: function(parent, rotation){
+		var ent = this.entity(parent);
 		ent.trueRotation = rotation;
-		this.entity(player, ent);
+		this.entity(parent, ent);
 		return rotation;
 	},
-	trueRotation: function(player){
-		return this.entity(player).trueRotation;
+	trueRotation: function(parent){
+		return this.entity(parent).trueRotation;
 	},
 
-	entity: function(player, ent) {
-		print("Set ent " + player + " to " + ent);
-		return this.entities[player] = ent;
+	entity: function(parent, ent) {
+		print("Set ent " + parent + " to " + ent);
+		return this.entities[parent] = ent;
 	},
 	entity: function(player) {
-		print("Get ent " + player);
-		var ent = this.entities[player];
+		print("Get ent " + parent);
+		var ent = this.entities[parent];
 		if(ent === undefined){
-			ent = this.entity(player, {
+			ent = this.entity(parent, {
 				trueRotation: null
 			});
 		}

@@ -12,9 +12,9 @@ Add `entity-lib` to your `dependencies: []` in **mod.hjson**.
 
 You may extend: (where Entity is Player or Unit)
 
-* drawWeapon(Entity entity, float rotation, int number): draw weapons how you want.
+* drawWeapon(Entity entity, float rotation, int number, uint index): draw weapons how you wish. May be optional.
 * drawUnder(Entity entity): draw sprites underneath the weapons. Optional.
-* drawOver(Entity entity): draw sprites above the weapons. Optional.
+* drawAbove(Entity entity): draw sprites above the weapons. Optional.
 
 
 # Functions and fields

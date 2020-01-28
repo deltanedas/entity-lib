@@ -9,13 +9,14 @@ const Mech = extend(entityLib.Common, {
 		this.trueRotation(player, Mathf.lerp(rot, player.rotation, this.rotationLerp);
 		this.update(player);
 	},
+	update: function(player){},
 
 	// @Override
 	draw: function(player){
 		const rot = this.trueRotation(player) - 90;
 		this.drawUnder(player, rot);
-		this.drawGuns(player, rot);
-		this.drawOver(player, rot);
+		this.drawWeapons(player, rot);
+		this.drawAbove(player, rot);
 	},
 
 	// @Override
