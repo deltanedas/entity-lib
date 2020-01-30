@@ -1,16 +1,23 @@
+print("Mech!")
+print(this.global.entityLib);
+print(this.global.entityLib.Common);
 const MechDef = Object.create(this.global.entityLib.Common);
+print("Lets see")
 Object.assign(MechDef, {
 	// @Override
-	updateAlt: function(player){
+	updateAlt(player){
 		// Rotation stuff
 		const rot = this.trueRotation(player);
+		print("Rot is " + rot);
 		if(rot === null){
 			rot = player.rotation;
 		}
-		this.trueRotation(player, Mathf.lerp(rot, player.rotation, this.rotationLerp);
+		this.trueRotation(player, Mathf.lerp(rot, player.rotation, this.rotationLerp));
 		this.update(player);
 	},
-	draw: function(player){
+	update(player){},
+
+	draw(player){
 		const rot = this.trueRotation(player) - 90;
 		this.drawUnder(player, rot);
 		this.drawWeapons(player, rot);
@@ -18,7 +25,7 @@ Object.assign(MechDef, {
 	},
 
 	// @Override
-	drawStats: function(player){
+	drawStats(player){
 		const rot = this.trueRotation(player);
 		print(this.drawLight)
 		print(this.drawLight === true)
@@ -28,7 +35,7 @@ Object.assign(MechDef, {
 			Draw.rect(player.getPowerCellRegion(),
 				player.x + Angles.trnsx(rot, this.cellTrnsY, 0),
 				player.y + Angles.trnsy(rot, this.cellTrnsY, 0),
-				rot - 90));
+				rot - 90);
 			Draw.reset();
 		}
 		const tmp = player.rotation;
