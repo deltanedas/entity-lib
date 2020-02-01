@@ -92,6 +92,7 @@ const MultiWeapon = {
 		this.length = weapon.length;
 	}
 };
+MultiWeapon.weapon = 0;
 
 /*
 Mech and units pull from this code
@@ -101,7 +102,7 @@ const state = this;
 const Common = {
 	// @Override
 	init(){
-		this.weapon = state.global.entityLib.extendWeapon(Weapon, this, {});
+		this.weapon = state.global.entityLib.extendWeapon(Weapon, this, []);
 		this.weapon.updateStats();
 		this.entities = [];
 		this.initAfter();
@@ -112,6 +113,8 @@ const Common = {
 	load(){ // YAY I can use load() because it doesn't need super!
 		this.weapon.load();
 		this.region = Core.atlas.find("clear");
+		this.legRegion = Core.atlas.find("clear");
+		this.baseRegion = Core.atlas.find("clear");
 		this.loadAfter();
 	},
 	loadAfter(){},
@@ -140,7 +143,7 @@ const Common = {
 		// TODO: see if this works and add weapon recoil
 		const offsetX = Angles.trnsx(rot + 90, weapon.length, weapon.width * num);
 		const offsetY = Angles.trnsy(rot + 90, weapon.length, weapon.width * num);
-		Draw.rect(weapon.region, player.x + offsetX, player.y + offsetY, rot);
+		Draw.rect(weapon.region, parent.x + offsetX, parent.y + offsetY, rot);
 	},
 
 	drawUnder(parent, rotation){},
