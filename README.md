@@ -38,7 +38,7 @@ See example code below:
 const entityLib = this.global.entityLib; // Like Java import
 const myMech = entityLib.extendMech(Mech, "my-mech", [{
 	loadAfter(){
-		this.underRegion = Core.atlas.find("error")
+		this.underRegion = Core.atlas.find("error");
 	},
 	drawUnder(player, rot){
 		Draw.rect(this.underRegion, player.x, player.y, rot);
@@ -49,10 +49,11 @@ myMech.rotationLerp = 0.02;
 myMech.weapons = [
 	Mechs.omega.weapon,
 	Mechs.dart.weapon,
-	Mechs.duo.weapon
+	Mechs.delta.weapon
 ];
 ```
 
-You can also look at a real examples:
+You can also look at some full examples:
+* https://github.com/DeltaNedas/entity-lib-example/blob/master/scripts/routertron.js
 * https://github.com/DeltaNedas/vbucks/blob/master/scripts/mechs/hurricane.js
 * https://github.com/DeltaNedas/vbucks/blob/master/scripts/mechs/mother-hen.js

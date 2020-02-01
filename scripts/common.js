@@ -81,7 +81,7 @@ const MultiWeapon = {
 	},
 
 	cycleWeapons(){
-		this.weapon = (this.weapon++) % this.parent.weapons.length;
+		this.weapon = (this.weapon + 1) % this.parent.weapons.length;
 	},
 
 	updateStats(){
