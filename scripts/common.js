@@ -2,7 +2,7 @@
 const MultiWeapon = {
 	// @Override
 	load(){
-		this.region = Core.atlas.find("empty");
+		this.region = Core.atlas.find("clear");
 		this.loadAfter();
 	},
 	loadAfter(){},
@@ -119,7 +119,6 @@ const Common = {
 	// @Override
 	draw(parent){
 		const rot = this.getTrueRotation(parent) - 90;
-		print(this.region + ", " + this.weapon.region)
 		this.drawUnder(parent, rot);
 		this.drawWeapons(parent, rot);
 		this.drawAbove(parent, rot);
@@ -138,7 +137,10 @@ const Common = {
 	drawWeapon(parent, rot, num, index){
 		const weapon = this.weapons[index];
 		// TODO: Use same maths from mother hen to actually move it properly instead of this joke
-		Draw.rect(weapon.region, parent.x + weapon.width * num, parent.y + weapon.length, rot); // Evenly space out each weapon by default
+		// TODO: see if this works and add weapon recoil
+		const offsetX = Angles.trnsx(rot + 90, weapon.length, weapon.width * num);
+		const offsetY = Angles.trnsy(rot + 90, weapon.length, weapon.width * num);
+		Draw.rect(weapon.region, player.x + offsetX, player.y + offsetY, rot);
 	},
 
 	drawUnder(parent, rotation){},
