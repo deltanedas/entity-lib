@@ -14,5 +14,16 @@ function extendUnit(Base, name, def){
 	return extendContent(Base, name, unitDef);
 }
 
+function extendWeapon(Base, parent, def){
+	const weaponDef = Object.create(entityLib.MultiWeapon);
+	Object.assign(weaponDef, def);
+	const ret = extendContent(Weapon, parent.name + "-multiweapon", weaponDef);
+	ret.parent = parent;
+	ret.isMech = parent.turnCursor !== undefined; // Will not work if UnitType gains a turnCursor field
+	ret.weapon = 0;
+	return ret;
+}
+
 this.global.entityLib.extendMech = extendMech;
 this.global.entityLib.extendUnit = extendUnit;
+this.global.entityLib.extendWeapon = extendWeapon;

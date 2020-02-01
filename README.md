@@ -31,8 +31,8 @@ See example code below:
 ```js
 const entityLib = this.global.entityLib;
 const myMech = entityLib.extendMech(Mech, "my-mech", {
-	drawUnder: function(player){
-		Draw.rect(Core.atlas.find("error"), player.x, player.y, this.trueRotation);
+	drawUnder(player){
+		Draw.rect(Core.atlas.find("error"), player.x, player.y, this.getTrueRotation());
 	}
 });
 myMech.rotationLimit = 1; // 60' per second usually

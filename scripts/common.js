@@ -1,19 +1,12 @@
 // TODO: custom weapon alternation code
 // TODO: prevent rotation wrapping around at +X
-const MultiWeapon = extend(Weapon, {
-	constructor(parent){
-		print("I am " + name + ": " + parent)
-		this.parent = parent;
-		this.name = parent.name + "-multiweapon";
-		this.isMech = parent.turnCursor !== undefined; // Will not work if UnitType gains a turnCursor field
-		this.weapon = 0;
-	},
-
+const MultiWeapon = {
 	// @Override
 	load(){
 		this.region = Core.atlas.find("empty");
 		this.loadAfter();
 	},
+	loadAfter(){},
 
 	// @Override
 	update(shooter, pX, pY){
@@ -30,6 +23,13 @@ const MultiWeapon = extend(Weapon, {
 
 		// "realUpdate" to avoid bs infinite recursion
 		this.realUpdate(shooter, pos.x, pos.y, Angles.angle(shooter.getX() + pos.x, shooter.getY() + pos.y, cx, cy), false);
+	},
+
+	getWidth(){
+		return this.weapons[this.weapon].width;
+	},
+	getLength(){
+		return this.weapons[this.weapon].length;
 	},
 
 	realUpdate(shooter, x, y, angle, number){
@@ -72,7 +72,7 @@ const MultiWeapon = extend(Weapon, {
 				Call.onGenericShootWeapon(shooter, x, y, angle, false);
 			}
 
-			this.parent.onShoot(this);
+			this.parent.onShoot(shooter, this);
 			this.cycleWeapons();
 		}
 	},
@@ -122,22 +122,21 @@ const MultiWeapon = extend(Weapon, {
 		//reset timer for remote players
 		shooter.getTimer().get(shooter.getShootTimer(false), weapon.reload);
 	}
-});
+};
 
 /*
 Mech and units pull from this code
 Do not extend in your mods.
 */
+const state = this;
 const Common = {
-	// @Override
-	constructor(name){
-		print("common " + name)
-		this.name = name;
-		this.weapon = new MultiWeapon(this);
+	init(){
+		print("common init")
+		this.weapon = state.global.entityLib.extendWeapon(Weapon, this, {});
 		this.entities = [];
-		this.contructed();
+		this.initAfter();
 	},
-	constructed(){},
+	initAfter(){},
 
 	// @Override
 	load(){ // YAY I can use load() because it doesn't need super!
@@ -164,29 +163,27 @@ const Common = {
 	},
 
 	drawAbove(parent, rotation){},
-	drawUnder(player, rotation){},
+	drawUnder(parent, rotation){},
 
-	onShoot(weapon){},
+	onShoot(shooter, weapon){},
 
-	trueRotation(parent, rotation){
-		var ent = this.entity(parent);
+	setTrueRotation(parent, rotation){
+		var ent = this.getEntity(parent);
 		ent.trueRotation = rotation;
-		this.entity(parent, ent);
+		this.setEntity(parent, ent);
 		return rotation;
 	},
-	trueRotation(parent){
-		return this.entity(parent).trueRotation;
+	getTrueRotation(parent){
+		return this.getEntity(parent).trueRotation;
 	},
 
-	entity(parent, ent) {
-		print("Set ent " + parent + " to " + ent);
+	setEntity(parent, ent) {
 		return this.entities[parent] = ent;
 	},
-	entity(player) {
-		print("Get ent " + parent);
+	getEntity(parent) {
 		var ent = this.entities[parent];
 		if(ent === undefined){
-			ent = this.entity(parent, {
+			ent = this.setEntity(parent, {
 				trueRotation: null
 			});
 		}

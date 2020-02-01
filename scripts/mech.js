@@ -3,18 +3,17 @@ Object.assign(Mechdef, {
 	// @Override
 	updateAlt(player){
 		// Rotation stuff
-		const rot = this.trueRotation(player);
-		print("Rot is " + rot);
+		var rot = this.getTrueRotation(player);
 		if(rot === null){
 			rot = player.rotation;
 		}
-		this.trueRotation(player, Mathf.lerp(rot, player.rotation, this.rotationLerp));
+		this.setTrueRotation(player, Mathf.lerp(rot, player.rotation, this.rotationLerp));
 		this.update(player);
 	},
 	update(player){},
 
 	draw(player){
-		const rot = this.trueRotation(player) - 90;
+		const rot = this.getTrueRotation(player) - 90;
 		this.drawUnder(player, rot);
 		this.drawWeapons(player, rot);
 		this.drawAbove(player, rot);
@@ -22,9 +21,7 @@ Object.assign(Mechdef, {
 
 	// @Override
 	drawStats(player){
-		const rot = this.trueRotation(player);
-		print(this.drawLight)
-		print(this.drawLight === true)
+		const rot = this.getTrueRotation(player);
 		if(this.drawCell){
 			const health = player.healthf();
 			Draw.color(Color.black, player.getTeam().color, health + Mathf.absin(Time.time(), health * 5, 1 - health));
