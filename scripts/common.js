@@ -1,5 +1,4 @@
 // TODO: custom weapon alternation code
-// TODO: prevent rotation wrapping around at +X
 const MultiWeapon = {
 	// @Override
 	load(){
@@ -40,7 +39,7 @@ const MultiWeapon = {
 
 	// @Override
 	shoot(shooter, x, y, angle, ign){
-		if(this.parent != null){
+		if(this.parent !== null){
 			const lastRotation = this.parent.getTrueRotation(shooter);
 
 			// TODO: see how player does it and fix wrapping
@@ -52,18 +51,20 @@ const MultiWeapon = {
 			// TODO: lerp towards target instead of this?
 			// Limit rotation speed
 			const rotationLimit = this.parent.rotationLimit;
-			if(Math.abs(angle - lastRotation) > rotationLimit){
-				// Decide which direction to turn
-				if((angle - lastRotation) > lastRotation){
-					angle = rotationLimit;
-				}else{
-					angle = -rotationLimit;
+			if(rotationLimit > 0){
+				if(Math.abs(angle - lastRotation) > rotationLimit){
+					// Decide which direction to turn
+					if((angle - lastRotation) > lastRotation){
+						angle = rotationLimit;
+					}else{
+						angle = -rotationLimit;
+					}
+					angle += lastRotation;
 				}
-				angle += lastRotation;
 			}
 			this.parent.setTrueRotation(shooter, angle);
 
-			// Cycle through weapons
+			this.parent.weapon = this.parent.weapons[this.weapon];
 			if(Vars.net.client()){
 				this.shootDirect(shooter, x, y, angle, false);
 			}else if(this.isMech){
@@ -71,56 +72,24 @@ const MultiWeapon = {
 			}else{
 				Call.onGenericShootWeapon(shooter, x, y, angle, false);
 			}
+			this.parent.weapon = this;
 
-			this.parent.onShoot(shooter, this);
+			this.parent.onShoot(shooter, this.weapon);
 			this.cycleWeapons();
+			this.updateStats();
 		}
 	},
 
 	cycleWeapons(){
-		this.weapon = (this.weapon++) % this.weapons.length;
+		this.weapon = (this.weapon++) % this.parent.weapons.length;
 	},
 
-	// @Override
-	shootDirect(shooter, offsetX, offsetY, rotation, ign){
-		this.realShootDirect(shooter, offsetX, offsetY, rotation, this.weapon);
-	},
-
-	// Basically copy pasted vanilla code but made it use current weapon
-	realShootDirect(shooter, offsetX, offsety, rotation, num){
-		const weapon = this.parent.weapons[num];
-
-		const x = shooter.getX() + offsetX;
-		const y = shooter.getY() + offsetY;
-		const baseX = shooter.getX(), baseY = shooter.getY();
-
-		weapon.shootSound.at(x, y, Mathf.random(0.8, 1.0));
-
-		this.sequenceNum = 0;
-		if(weapon.shotDelay > 0.01){
-			Angles.shotgun(weapon.shots, weapon.spacing, rotation, f => {
-				Time.run(this.sequenceNum * weapon.shotDelay, () => weapon.bullet(shooter, x + shooter.getX() - baseX, y + shooter.getY() - baseY, f + Mathf.range(weapon.inaccuracy)));
-				this.sequenceNum++;
-			});
-		}else{
-			Angles.shotgun(weapon.shots, weapon.spacing, rotation, f => weapon.bullet(shooter, x, y, f + Mathf.range(weapon.inaccuracy)));
-		}
-
-		const ammo = weapon.bullet;
-
-		Tmp.v1.trns(rotation + 180, ammo.recoil);
-
-		shooter.velocity().add(Tmp.v1);
-
-		Tmp.v1.trns(rotation, 3);
-
-		Effects.shake(weapon.shake, weapon.shake, x, y);
-		Effects.effect(weapon.ejectEffect, x, y, rotation * Mathf.clamp(num, -1, 1));
-		Effects.effect(ammo.shootEffect, x + Tmp.v1.x, y + Tmp.v1.y, rotation, shooter);
-		Effects.effect(ammo.smokeEffect, x + Tmp.v1.x, y + Tmp.v1.y, rotation, shooter);
-
-		//reset timer for remote players
-		shooter.getTimer().get(shooter.getShootTimer(false), weapon.reload);
+	updateStats(){
+		const weapon = this.parent.weapons[this.weapon];
+		this.reload = weapon.reload;
+		this.shots = weapon.shots;
+		this.width = weapon.width * -(Mathf.floor(this.parent.weapons.length / 2) - this.weapon);
+		this.length = weapon.length;
 	}
 };
 
@@ -130,9 +99,10 @@ Do not extend in your mods.
 */
 const state = this;
 const Common = {
+	// @Override
 	init(){
-		print("common init")
 		this.weapon = state.global.entityLib.extendWeapon(Weapon, this, {});
+		this.weapon.updateStats();
 		this.entities = [];
 		this.initAfter();
 	},
@@ -146,12 +116,21 @@ const Common = {
 	},
 	loadAfter(){},
 
+	// @Override
+	draw(parent){
+		const rot = this.getTrueRotation(parent) - 90;
+		print(this.region + ", " + this.weapon.region)
+		this.drawUnder(parent, rot);
+		this.drawWeapons(parent, rot);
+		this.drawAbove(parent, rot);
+	},
+
 	drawWeapons(parent, rot){
 		const lim = Mathf.floor(this.weapons.length / 2);
 		var index = 0;
 		for(var num = -lim; num < lim; num++){
 			if(num != 0 || this.weapons.length % 2 == 1){
-				this.drawWeapon(player, rot, num, index++);
+				this.drawWeapon(parent, rot, num, index++);
 			}
 		}
 	},
@@ -162,8 +141,8 @@ const Common = {
 		Draw.rect(weapon.region, parent.x + weapon.width * num, parent.y + weapon.length, rot); // Evenly space out each weapon by default
 	},
 
-	drawAbove(parent, rotation){},
 	drawUnder(parent, rotation){},
+	drawAbove(parent, rotation){},
 
 	onShoot(shooter, weapon){},
 
@@ -178,12 +157,12 @@ const Common = {
 	},
 
 	setEntity(parent, ent) {
-		return this.entities[parent] = ent;
+		return this.entities[parent.id] = ent;
 	},
 	getEntity(parent) {
-		var ent = this.entities[parent];
+		var ent = this.entities[parent.id];
 		if(ent === undefined){
-			ent = this.setEntity(parent, {
+			ent = this.setEntity(parent.id, {
 				trueRotation: null
 			});
 		}

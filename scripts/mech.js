@@ -3,21 +3,18 @@ Object.assign(Mechdef, {
 	// @Override
 	updateAlt(player){
 		// Rotation stuff
-		var rot = this.getTrueRotation(player);
-		if(rot === null){
-			rot = player.rotation;
+		if(this.rotationLimit > 0){
+			var rot = this.getTrueRotation(player);
+			if(rot === null){
+				rot = player.rotation;
+			}
+			this.setTrueRotation(player, Mathf.lerp(rot, player.rotation, this.rotationLerp));
+		}else{
+			this.setTrueRotation(player, player.rotation);
 		}
-		this.setTrueRotation(player, Mathf.lerp(rot, player.rotation, this.rotationLerp));
 		this.update(player);
 	},
 	update(player){},
-
-	draw(player){
-		const rot = this.getTrueRotation(player) - 90;
-		this.drawUnder(player, rot);
-		this.drawWeapons(player, rot);
-		this.drawAbove(player, rot);
-	},
 
 	// @Override
 	drawStats(player){

@@ -1,10 +1,13 @@
 # Entity Lib
 
-Adds a global field `entityLib`.
+Adds a field `this.global.entityLib`.
 
-You can extend classes `entityLib.Mech` or `entityLib.Unit`.
+You can extend custom mechs/units with certain attributes such as:
+* Limiting rotation speed
+* Multiple unique weapons
+* more
 
-By default, it functions like a vanilla one.
+By default, they function like vanilla ones.
 
 # How to use
 
@@ -13,8 +16,11 @@ Add `entity-lib` to your `dependencies: []` in **mod.hjson**.
 You may extend: (where Entity is Player or Unit)
 
 * drawWeapon(Entity entity, float rotation, int number, uint index): draw weapons how you wish. May be optional.
-* drawUnder(Entity entity): draw sprites underneath the weapons. Optional.
-* drawAbove(Entity entity): draw sprites above the weapons. Optional.
+* drawUnder(Entity entity, float rotation): draw sprites underneath the weapons. Optional.
+* drawAbove(Entity entity, float rotation): draw sprites above the weapons. Optional.
+* some others, I really need to update docs (read code intead)
+
+__**Do not set this.region as its entity will draw it with raw rotation.**__
 
 
 # Functions and fields
@@ -29,12 +35,15 @@ You may extend: (where Entity is Player or Unit)
 
 See example code below:
 ```js
-const entityLib = this.global.entityLib;
-const myMech = entityLib.extendMech(Mech, "my-mech", {
-	drawUnder(player){
-		Draw.rect(Core.atlas.find("error"), player.x, player.y, this.getTrueRotation());
+const entityLib = this.global.entityLib; // Like Java import
+const myMech = entityLib.extendMech(Mech, "my-mech", [{
+	loadAfter(){
+		this.underRegion = Core.atlas.find("error")
+	},
+	drawUnder(player, rot){
+		Draw.rect(this.underRegion, player.x, player.y, rot);
 	}
-});
+}]);
 myMech.rotationLimit = 1; // 60' per second usually
 myMech.rotationLerp = 0.02;
 myMech.weapons = [
@@ -43,3 +52,7 @@ myMech.weapons = [
 	Mechs.duo.weapon
 ];
 ```
+
+You can also look at a real examples:
+* https://github.com/DeltaNedas/vbucks/blob/master/scripts/mechs/hurricane.js
+* https://github.com/DeltaNedas/vbucks/blob/master/scripts/mechs/mother-hen.js
