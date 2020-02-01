@@ -30,7 +30,7 @@ You may extend: (where Entity is Player or Unit)
 See example code below:
 ```js
 const entityLib = this.global.entityLib;
-const myMech = extendContent(entityLib.Mech, "my-mech", {
+const myMech = entityLib.extendMech(Mech, "my-mech", {
 	drawUnder: function(player){
 		Draw.rect(Core.atlas.find("error"), player.x, player.y, this.trueRotation);
 	}

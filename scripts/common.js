@@ -1,9 +1,8 @@
 // TODO: custom weapon alternation code
-print("Common")
-
+// TODO: prevent rotation wrapping around at +X
 const MultiWeapon = extend(Weapon, {
 	constructor(parent){
-		print("I am " + name = ": " + parent)
+		print("I am " + name + ": " + parent)
 		this.parent = parent;
 		this.name = parent.name + "-multiweapon";
 		this.isMech = parent.turnCursor !== undefined; // Will not work if UnitType gains a turnCursor field
@@ -123,7 +122,7 @@ const MultiWeapon = extend(Weapon, {
 		//reset timer for remote players
 		shooter.getTimer().get(shooter.getShootTimer(false), weapon.reload);
 	}
-};
+});
 
 /*
 Mech and units pull from this code
@@ -132,9 +131,13 @@ Do not extend in your mods.
 const Common = {
 	// @Override
 	constructor(name){
+		print("common " + name)
 		this.name = name;
+		this.weapon = new MultiWeapon(this);
 		this.entities = [];
+		this.contructed();
 	},
+	constructed(){},
 
 	// @Override
 	load(){ // YAY I can use load() because it doesn't need super!
@@ -142,7 +145,6 @@ const Common = {
 		this.region = Core.atlas.find("clear");
 		this.loadAfter();
 	},
-
 	loadAfter(){},
 
 	drawWeapons(parent, rot){
@@ -195,7 +197,6 @@ Common.entities = {};
 Common.rotationLimit = 0;
 Common.rotationLerp = 0.01;
 Common.weapons = [];
-Common.weapon = new MultiWeapon(Common);
 
 this.global.entityLib.Common = Common;
-this.global.entitylib.MultiWeapon = MultiWeapon
+this.global.entityLib.MultiWeapon = MultiWeapon

@@ -1,11 +1,9 @@
-print("Unit");
-const UnitTypeDef = Object.create(this.global.entityLib.Common);
-print("Lets see")
-Object.assign(UnitTypeDef, {
+const Unitdef = Object.create(this.global.entityLib.Common);
+Object.assign(Unitdef, {
 	// @Override
 	loadAfter: function(){
 		print("Hello client!");
 	}
 });
 
-this.global.entityLib.UnitType = extend(UnitType, UnitTypeDef);
+this.global.entityLib.UnitType = extend(Unit, Unitdef);

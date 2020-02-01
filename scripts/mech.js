@@ -1,9 +1,5 @@
-print("Mech!")
-print(this.global.entityLib);
-print(this.global.entityLib.Common);
-const MechDef = Object.create(this.global.entityLib.Common);
-print("Lets see")
-Object.assign(MechDef, {
+const Mechdef = Object.create(this.global.entityLib.Common);
+Object.assign(Mechdef, {
 	// @Override
 	updateAlt(player){
 		// Rotation stuff
@@ -50,4 +46,4 @@ Object.assign(MechDef, {
 	}
 });
 
-this.global.entityLib.Mech = extend(Mech, MechDef);
+this.global.entityLib.Mech = Mechdef;
