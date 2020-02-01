@@ -41,7 +41,7 @@ const MultiWeapon = {
 	// @Override
 	shoot(shooter, x, y, angle, ign){
 		if(this.parent != null){
-			const lastRotation = this.parent.trueRotation(shooter);
+			const lastRotation = this.parent.getTrueRotation(shooter);
 
 			// TODO: see how player does it and fix wrapping
 			// Prevent wrapping around at +X
@@ -61,7 +61,7 @@ const MultiWeapon = {
 				}
 				angle += lastRotation;
 			}
-			this.parent.trueRotation(shooter, angle);
+			this.parent.setTrueRotation(shooter, angle);
 
 			// Cycle through weapons
 			if(Vars.net.client()){
@@ -83,12 +83,12 @@ const MultiWeapon = {
 
 	// @Override
 	shootDirect(shooter, offsetX, offsetY, rotation, ign){
-		this.realShootDirect(shooter, offsetX, offsety, rotation, this.weapon);
+		this.realShootDirect(shooter, offsetX, offsetY, rotation, this.weapon);
 	},
 
 	// Basically copy pasted vanilla code but made it use current weapon
 	realShootDirect(shooter, offsetX, offsety, rotation, num){
-		const weapon = this.weapons[num];
+		const weapon = this.parent.weapons[num];
 
 		const x = shooter.getX() + offsetX;
 		const y = shooter.getY() + offsetY;
