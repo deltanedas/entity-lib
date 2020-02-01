@@ -26,10 +26,10 @@ const MultiWeapon = {
 	},
 
 	getWidth(){
-		return this.weapons[this.weapon].width;
+		return this.parent.weapons[this.weapon].width;
 	},
 	getLength(){
-		return this.weapons[this.weapon].length;
+		return this.parent.weapons[this.weapon].length;
 	},
 
 	realUpdate(shooter, x, y, angle, number){
