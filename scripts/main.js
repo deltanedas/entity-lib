@@ -1,4 +1,4 @@
-this.global.entityLib = {};
+this.global.entityLib = {features: {}};
 
 require("common");
 require("mech");
