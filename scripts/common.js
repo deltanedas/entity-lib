@@ -9,7 +9,7 @@ const MultiWeapon = {
 
 	// @Override
 	update(shooter, pX, pY){
-		var pos = Vec2(pX, pY);
+		var pos = Vec2(pX, pY); // Raw rotation
 		pos.sub(shooter.getX(), shooter.getY());
 		if(pos.len() < this.minPlayerDist){ // TODO: see if this affects units
 			pos.setLength(this.minPlayerDist);
@@ -17,18 +17,13 @@ const MultiWeapon = {
 		var cx = pos.x + shooter.getX(), cy = pos.y + shooter.getY();
 
 		var ang = pos.angle();
-		pos.setAngle(ang);
-		pos.trns(ang - 90, this.getWidth(), this.getLength());
+		if(this.parent.rotationLimit > 0){
+			ang = this.parent.getTrueRotation(shooter);
+		}
+		pos.trns(ang - 90, this.width, this.length);
 
 		// "realUpdate" to avoid bs infinite recursion
 		this.realUpdate(shooter, pos.x, pos.y, Angles.angle(shooter.getX() + pos.x, shooter.getY() + pos.y, cx, cy), false);
-	},
-
-	getWidth(){
-		return this.parent.weapons[this.weapon].width;
-	},
-	getLength(){
-		return this.parent.weapons[this.weapon].length;
 	},
 
 	realUpdate(shooter, x, y, angle, number){
@@ -41,12 +36,6 @@ const MultiWeapon = {
 	shoot(shooter, x, y, angle, ign){
 		if(this.parent !== null){
 			const lastRotation = this.parent.getTrueRotation(shooter);
-
-			// TODO: see how player does it and fix wrapping
-			// Prevent wrapping around at +X
-			if(Math.abs(angle - lastRotation) > 180){
-				angle += 360;
-			}
 
 			// TODO: lerp towards target instead of this?
 			// Limit rotation speed
@@ -65,6 +54,7 @@ const MultiWeapon = {
 			this.parent.setTrueRotation(shooter, angle);
 
 			this.parent.weapon = this.parent.weapons[this.weapon];
+			this.updateStats();
 			if(Vars.net.client()){
 				this.shootDirect(shooter, x, y, angle, false);
 			}else if(this.isMech){
@@ -74,9 +64,8 @@ const MultiWeapon = {
 			}
 			this.parent.weapon = this;
 
-			this.parent.onShoot(shooter, this.weapon);
+			this.parent.onShoot(shooter, this.weapon, x, y, angle);
 			this.cycleWeapons();
-			this.updateStats();
 		}
 	},
 
@@ -84,11 +73,22 @@ const MultiWeapon = {
 		this.weapon = (this.weapon + 1) % this.parent.weapons.length;
 	},
 
+	// Pretend to be current weapon
 	updateStats(){
-		const weapon = this.parent.weapons[this.weapon];
+		const weapons = this.parent.weapons;
+		const weapon = weapons[this.weapon];
 		this.reload = weapon.reload;
 		this.shots = weapon.shots;
-		this.width = weapon.width * -(Mathf.floor(this.parent.weapons.length / 2) - this.weapon);
+		const lim = Mathf.floor(weapons.length / 2);
+		var index = 0;
+		for(var num = -lim; num <= lim; num++){
+			if(num != 0 || weapons.length % 2 == 1){
+				if(index++ == this.weapon){
+					this.width = weapon.width * num;
+					break;
+				}
+			}
+		}
 		this.length = weapon.length;
 	}
 };
@@ -121,7 +121,7 @@ const Common = {
 
 	// @Override
 	draw(parent){
-		const rot = this.getTrueRotation(parent) - 90;
+		const rot = (this.getTrueRotation(parent) || 0) - 90;
 		this.drawUnder(parent, rot);
 		this.drawWeapons(parent, rot);
 		this.drawAbove(parent, rot);
@@ -130,7 +130,7 @@ const Common = {
 	drawWeapons(parent, rot){
 		const lim = Mathf.floor(this.weapons.length / 2);
 		var index = 0;
-		for(var num = -lim; num < lim; num++){
+		for(var num = -lim; num <= lim; num++){
 			if(num != 0 || this.weapons.length % 2 == 1){
 				this.drawWeapon(parent, rot, num, index++);
 			}
@@ -149,7 +149,7 @@ const Common = {
 	drawUnder(parent, rotation){},
 	drawAbove(parent, rotation){},
 
-	onShoot(shooter, weapon){},
+	onShoot(shooter, weapon, x, y, angle){},
 
 	setTrueRotation(parent, rotation){
 		var ent = this.getEntity(parent);
@@ -167,8 +167,8 @@ const Common = {
 	getEntity(parent) {
 		var ent = this.entities[parent.id];
 		if(ent === undefined){
-			ent = this.setEntity(parent.id, {
-				trueRotation: null
+			ent = this.setEntity(parent, {
+				trueRotation: parent.rotation
 			});
 		}
 		return ent;
