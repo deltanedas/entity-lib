@@ -39,6 +39,19 @@ Object.assign(Mechdef, {
 			player.drawLight();
 		}
 		player.rotation = tmp;
+	},
+
+	// @Override
+	drawShadow(player, offsetX, offsetY){
+		const scale = this.flying ? 1 : player.boostHeat / 2;
+		offsetX *= scale;
+		offsetY *= scale;
+
+		player.x += offsetX; // Trick it into drawing at the correct offset;
+		player.y += offsetY;
+		this.draw(player);
+		player.x -= offsetX;
+		player.y -= offsetY;
 	}
 });
 

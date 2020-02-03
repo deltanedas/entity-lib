@@ -78,7 +78,7 @@ const MultiWeapon = {
 	updateStats(){
 		const weapons = this.parent.weapons;
 		const weapon = weapons[this.weapon];
-		this.reload = weapon.reload;
+		this.reload = weapon.reload / weapons.length; // Like alternate
 		this.shots = weapon.shots;
 		const lim = Mathf.floor(weapons.length / 2);
 		var index = 0;
@@ -103,7 +103,7 @@ const state = this;
 const Common = {
 	// @Override
 	init(){
-		this.weapon = state.global.entityLib.extendWeapon(Weapon, this, []);
+		this.weapon = state.global.entityLib.extendWeapon(Weapon, this);
 		this.weapon.updateStats();
 		this.entities = [];
 		this.initAfter();
@@ -152,7 +152,11 @@ const Common = {
 		const x = Angles.trnsx(rot + 90, offsetY, offsetX);
 		const y = Angles.trnsy(rot + 90, offsetY, offsetX);
 
-		Draw.rect(weapon.region, parent.x + x, parent.y + y, rot);
+		Draw.rect(weapon.region,
+			parent.x + x, parent.y + y,
+			Draw.scl * weapon.region.getWidth() * ((num > 0) ? -1 : 1), // Flip textures on either side
+			Draw.scl * weapon.region.getHeight(),
+			rot);
 	},
 
 	drawUnder(parent, rotation){},
