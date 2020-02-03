@@ -52,6 +52,20 @@ Object.assign(Mechdef, {
 		this.draw(player);
 		player.x -= offsetX;
 		player.y -= offsetY;
+	},
+
+	// @Override
+	drawEngine(player){
+		const size = this.engineSize * (this.flying ? 1 : player.boostHeat);
+		const rotation = this.getTrueRotation(player);
+		Draw.color(this.engineColor);
+		Fill.circle(player.x + Angles.trnsx(rotation + 180, this.engineOffset), player.y + Angles.trnsy(rotation + 180, this.engineOffset),
+			(size + Mathf.absin(Time.time(), 2, size / 4)) * this.engineRadius);
+
+		Draw.color(this.engineInnerColor);
+		Fill.circle(player.x + Angles.trnsx(rotation + 180, this.engineOffset - 1), player.y + Angles.trnsy(rotation + 180, this.engineOffset - 1),
+			(size + Mathf.absin(Time.time(), 2, size / 4)) * this.engineInnerRadius);
+		Draw.color();
 	}
 });
 
