@@ -1,9 +1,9 @@
 const entityLib = this.global.entityLib;
 
 function extendMech(Base, name, features){
-	// Merge def over the original custom Mech definition.
+	// Merge features over the original entity-lib definition.
 	const mechDef = Object.create(entityLib.Mech);
-	features.forEach(def => {
+	(features || {}).forEach(def => {
 		Object.assign(mechDef, def);
 	});
 
@@ -11,9 +11,8 @@ function extendMech(Base, name, features){
 }
 
 function extendUnit(Base, name, features){
-	// Merge def over the original custom Unit definition.
 	const unitDef = Object.create(entityLib.Unit);
-	features.forEach(def => {
+	(features || {}).forEach(def => {
 		Object.assign(unitDef, def);
 	});
 
@@ -22,7 +21,7 @@ function extendUnit(Base, name, features){
 
 function extendWeapon(Base, parent, features){
 	const weaponDef = Object.create(entityLib.MultiWeapon);
-	features.forEach(def => {
+	(features || {}).forEach(def => {
 		Object.assign(weaponDef, def);
 	});
 

@@ -22,6 +22,8 @@ You may extend: (where Entity is Player or Unit)
 
 __**Do not set this.region as its entity will draw it with raw rotation.**__
 
+For each weapon, you can set `recoilRecovery` which determines how fast recoil is recovered, by default it is `1 / (reload + 1)`.
+
 
 # Functions and fields
 

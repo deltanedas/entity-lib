@@ -64,6 +64,7 @@ const MultiWeapon = {
 			}
 			this.parent.weapon = this;
 
+			this.parent.updateRecoil(shooter, this.weapon);
 			this.parent.onShoot(shooter, this.weapon, x, y, angle);
 			this.cycleWeapons();
 		}
@@ -112,6 +113,12 @@ const Common = {
 	// @Override
 	load(){ // YAY I can use load() because it doesn't need super!
 		this.weapon.load();
+		for (var i = 0; i < this.weapons.length; i++){
+			this.weapons[i].load(); // Load its weapons in case you... want to draw them?
+		}
+
+		// Prevent parent from drawing stuff at wrong rotation
+		// TODO: lobby for shadows and engine light
 		this.region = Core.atlas.find("clear");
 		this.legRegion = Core.atlas.find("clear");
 		this.baseRegion = Core.atlas.find("clear");
@@ -139,17 +146,34 @@ const Common = {
 
 	drawWeapon(parent, rot, num, index){
 		const weapon = this.weapons[index];
-		// TODO: Use same maths from mother hen to actually move it properly instead of this joke
-		// TODO: see if this works and add weapon recoil
-		const offsetX = Angles.trnsx(rot + 90, weapon.length, weapon.width * num);
-		const offsetY = Angles.trnsy(rot + 90, weapon.length, weapon.width * num);
-		Draw.rect(weapon.region, parent.x + offsetX, parent.y + offsetY, rot);
+
+		const offsetX = weapon.width * num;
+		const offsetY = weapon.length - this.getRecoil(parent, index);
+		const x = Angles.trnsx(rot + 90, offsetY, offsetX);
+		const y = Angles.trnsy(rot + 90, offsetY, offsetX);
+
+		Draw.rect(weapon.region, parent.x + x, parent.y + y, rot);
 	},
 
 	drawUnder(parent, rotation){},
 	drawAbove(parent, rotation){},
 
 	onShoot(shooter, weapon, x, y, angle){},
+
+	updateRecoil(player, weapon){
+		this.setRecoil(player, weapon, this.weapons[weapon].recoil);
+	},
+	setRecoil(player, weapon, recoil){
+		const ent = this.getEntity(player);
+		var recoils = ent.recoil || {};
+		recoils[weapon] = recoil;
+		ent.recoil = recoils;
+		this.setEntity(player, ent);
+		return recoil;
+	},
+	getRecoil(player, weapon){
+		return (this.getEntity(player).recoil || {})[weapon] || 0;
+	},
 
 	setTrueRotation(parent, rotation){
 		var ent = this.getEntity(parent);

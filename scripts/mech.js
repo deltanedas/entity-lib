@@ -8,6 +8,12 @@ Object.assign(Mechdef, {
 		}else{
 			this.setTrueRotation(player, player.rotation);
 		}
+		for (var i = 0; i < this.weapons.length; i++){
+			const weapon = this.weapons[i];
+			if(weapon.recoil > 0){ // Save a bit of CPU
+				this.setRecoil(player, i, Mathf.lerp(this.getRecoil(player, i), 0, weapon.recoilRecovery || 1 / (weapon.reload + 1)));
+			}
+		}
 		this.update(player);
 	},
 	update(player){},
