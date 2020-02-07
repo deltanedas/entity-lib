@@ -94,6 +94,8 @@ const MultiWeapon = {
 	}
 };
 MultiWeapon.weapon = 0;
+MultiWeapon.isMech = null; // Do not modify.
+MultiWeapon.bullet = null; // ^
 
 /*
 Mech and units pull from this code
@@ -146,9 +148,10 @@ const Common = {
 
 	drawWeapon(parent, rot, num, index){
 		const weapon = this.weapons[index];
+		const side = Mathf.clamp(-num, -1, 1);
 
-		const offsetX = weapon.width * num;
-		const offsetY = weapon.length - this.getRecoil(parent, index);
+		const offsetX = weapon.width * num + this.weaponOffsetX * side;
+		const offsetY = weapon.length + this.weaponOffsetY - this.getRecoil(parent, index);
 		const x = Angles.trnsx(rot + 90, offsetY, offsetX);
 		const y = Angles.trnsy(rot + 90, offsetY, offsetX);
 
@@ -161,6 +164,43 @@ const Common = {
 
 	drawUnder(parent, rotation){},
 	drawAbove(parent, rotation){},
+
+	// @Override
+	drawStats(parent){
+		const rot = this.getTrueRotation(parent) || 0;
+		if(this.drawCell){
+			const health = parent.healthf();
+			Draw.color(Color.black, parent.getTeam().color, health + Mathf.absin(Time.time(), health * 5, 1 - health));
+			Draw.rect(parent.getPowerCellRegion(),
+				parent.x + Angles.trnsx(rot, this.cellTrnsY, 0),
+				parent.y + Angles.trnsy(rot, this.cellTrnsY, 0),
+				rot - 90);
+			Draw.reset();
+		}
+		const tmp = parent.rotation;
+		parent.rotation = rot;
+		if(this.drawItems){
+			parent.drawBackItems();
+		}
+
+		if(this.lightEmitted > 0){
+			parent.drawLight(this.lightEmitted);
+		}
+		parent.rotation = tmp;
+	},
+
+	// @Override
+	drawShadow(parent, offsetX, offsetY){
+		const scale = this.weapon.isMech ? (this.flying ? 1 : parent.boostHeat / 2) : 1; // Units cannot boost, so do not scale them.
+		offsetX *= scale;
+		offsetY *= scale;
+
+		parent.x += offsetX; // Trick it into drawing at the correct offset;
+		parent.y += offsetY;
+		this.draw(parent);
+		parent.x -= offsetX;
+		parent.y -= offsetY;
+	},
 
 	onShoot(shooter, weapon, x, y, angle){},
 
@@ -206,6 +246,7 @@ Common.entities = {};
 Common.rotationLimit = 0;
 Common.rotationLerp = 0.01;
 Common.weapons = [];
+Common.cellTrnsY = 0;
 
 this.global.entityLib.Common = Common;
 this.global.entityLib.MultiWeapon = MultiWeapon

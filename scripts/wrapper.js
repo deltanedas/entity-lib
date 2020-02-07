@@ -11,12 +11,17 @@ function extendMech(Base, name, features){
 }
 
 function extendUnit(Base, name, features){
-	const unitDef = Object.create(entityLib.Unit);
+	const unitDef = Object.create(entityLib.UnitType);
 	(features || []).forEach(def => {
 		Object.assign(unitDef, def);
 	});
 
-	return extendContent(Base, name, unitDef);
+	const ret = extendContent(UnitType, name, unitDef);
+	ret.constructor = prov(() => {
+		return new Base();
+	});
+	return ret;
+	// TODO: lobby for rhino to let us use Class.new or something, this is janky
 }
 
 function extendWeapon(Base, parent, features){
@@ -27,6 +32,11 @@ function extendWeapon(Base, parent, features){
 
 	const ret = extendContent(Weapon, parent.name + "-multiweapon", weaponDef);
 	ret.parent = parent;
+	ret.bullet = extend(BasicBulletType, {
+		range(){
+			return 0; // Unit range overrides it.
+		}
+	});
 	ret.isMech = parent.turnCursor !== undefined; // Will not work if UnitType gains a turnCursor field
 	return ret;
 }
